@@ -27,6 +27,7 @@
  * limitations under the License.
  */
 
+//#define LOG_NDEBUG 0
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
@@ -199,6 +200,7 @@ int gralloc_alloc_fimc1(size_t size, int usage,
     }
 
     *pHandle = hnd;
+    hnd->backing_store = next_backing_store_id();
     hnd->format = format;
     hnd->usage = usage;
     hnd->width = w;
@@ -269,10 +271,19 @@ static int gralloc_alloc_ion(alloc_device_t *dev, size_t size, int usage,
     return 0;
 }
 
+static uint64_t next_backing_store_id()
+{
+    static std::atomic<uint64_t> next_id(1);
+    return next_id++;
+}
+
 static int gralloc_alloc_buffer(alloc_device_t* dev, size_t size, int usage,
                                 buffer_handle_t* pHandle, int w, int h,
                                 int format, int bpp, int stride_raw, int stride)
 {
+    ALOGV("%s: size:%d usage:%d w:%d h:%d format:%d bpp:%d stride_raw:%d stride:%d",
+        __func__, size, usage, w,h, format, bpp, stride_raw, stride);
+
     ump_handle ump_mem_handle;
     void *cpu_ptr;
     ump_secure_id ump_id;
@@ -340,6 +351,7 @@ static int gralloc_alloc_buffer(alloc_device_t* dev, size_t size, int usage,
                     }
 #endif
 
+                    hnd->backing_store = next_backing_store_id();
                     hnd->format = format;
                     hnd->usage = usage;
                     hnd->width = w;
@@ -378,6 +390,8 @@ static int gralloc_alloc_framebuffer_locked(alloc_device_t* dev, size_t size, in
                                             buffer_handle_t* pHandle, int w, int h,
                                             int format, int bpp, int stride)
 {
+    ALOGV("%s: size:%d usage:%d w:%d h:%d format:%d bpp:%d ",
+        __func__, size, usage, w,h, format, bpp);
     private_module_t* m = reinterpret_cast<private_module_t*>(dev->common.module);
 
     ALOGD_IF(debug_level > 0, "%s size=0x%x usage=0x%x w=%d h=%d format=0x%x(%d) bpp=%d stride=%d", __func__, size, usage, w, h, format, format, bpp, stride);

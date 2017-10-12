@@ -24,6 +24,7 @@
  * limitations under the License.
  */
 
+//#define LOG_NDEBUG 0
 #ifndef GRALLOC_PRIV_H_
 #define GRALLOC_PRIV_H_
 
@@ -143,6 +144,10 @@ struct private_handle_t {
     int     ion_client;
     void   *ion_memory;
 
+    uint64_t backing_store;
+    uint64_t producer_usage;
+    uint64_t consumer_usage;
+
 #ifdef __cplusplus
     static const int sNumInts = 21;
     static const int sNumFds = 1;
@@ -175,6 +180,8 @@ struct private_handle_t {
         version = sizeof(native_handle);
         numFds = sNumFds;
         numInts = sNumInts;
+        ALOGV("%s: fd:%d magic:%d flags:%d size:%d base:%d", __func__,
+            fd, magic, flags, size, base);
     }
 
     private_handle_t(int flags, int size, int base, int lock_state, int fb_file, int fb_offset):
@@ -204,6 +211,8 @@ struct private_handle_t {
         version = sizeof(native_handle);
         numFds = sNumFds;
         numInts = sNumInts;
+        ALOGV("%s: fd:%d magic:%d flags:%d size:%d base:%d", __func__,
+            fd, magic, flags, size, base);
     }
 
     ~private_handle_t()
