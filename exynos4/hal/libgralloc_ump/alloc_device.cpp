@@ -99,6 +99,12 @@ extern int get_bpp(int format);
 
 #define EXYNOS4_ALIGN( value, base ) (((value) + ((base) - 1)) & ~((base) - 1))
 
+static uint64_t next_backing_store_id()
+{
+    static std::atomic<uint64_t> next_id(1);
+    return next_id++;
+}
+
 int gralloc_alloc_fimc1(size_t size, int usage,
                         buffer_handle_t* pHandle, int w, int h,
                         int format, int bpp, int stride_raw, int stride) {
@@ -269,12 +275,6 @@ static int gralloc_alloc_ion(alloc_device_t *dev, size_t size, int usage,
         ump_cpu_msync_now((ump_handle)*ump_mem_handle, UMP_MSYNC_CLEAN_AND_INVALIDATE, NULL, 0);
     }
     return 0;
-}
-
-static uint64_t next_backing_store_id()
-{
-    static std::atomic<uint64_t> next_id(1);
-    return next_id++;
 }
 
 static int gralloc_alloc_buffer(alloc_device_t* dev, size_t size, int usage,
@@ -669,7 +669,7 @@ static int alloc_device_free(alloc_device_t* dev, buffer_handle_t handle)
     }
 
     if (hnd->flags & private_handle_t::PRIV_FLAGS_USES_ION) {
-        if (hnd->ion_memory > 0)
+        if (hnd->ion_memory != NULL)
             munmap(hnd->ion_memory, hnd->size);
         ion_free(hnd->fd);
     }
