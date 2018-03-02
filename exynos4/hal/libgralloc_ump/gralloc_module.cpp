@@ -31,6 +31,7 @@
 //#define LOG_NDEBUG 0
 #include <errno.h>
 #include <pthread.h>
+#include <stdlib.h>
 
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -499,9 +500,12 @@ static int gralloc_lock(gralloc_module_t const* module, buffer_handle_t handle,
 #endif
 
     if (usage & GRALLOC_USAGE_YUV_ADDR) {
-        vaddr[0] = (void*)hnd->base;
-        vaddr[1] = (void*)(hnd->base + hnd->uoffset);
-        vaddr[2] = (void*)(hnd->base + hnd->uoffset + hnd->voffset);
+        // Create pointer to 3 pointers for YUV addresses
+        void** pAddr = (void **) malloc(3 * sizeof(void *));
+        pAddr[0] = (void*)hnd->base;
+        pAddr[1] = (void*)(hnd->base + hnd->uoffset);
+        pAddr[2] = (void*)(hnd->base + hnd->uoffset + hnd->voffset);
+        *vaddr = pAddr;
 
         ALOGD_IF(debug_level > 0, "%s vaddr[0]=%x vaddr[1]=%x vaddr[2]=%x", __func__, vaddr[0], vaddr[1], vaddr[2]);
     } else {
