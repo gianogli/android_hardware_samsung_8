@@ -25,7 +25,7 @@ LOCAL_PATH := $(call my-dir)
 # hw/<OVERLAY_HARDWARE_MODULE_ID>.<ro.product.board>.so
 include $(CLEAR_VARS)
 LOCAL_PRELINK_MODULE := false
-LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw 
+LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_SHARED_LIBRARIES := liblog libcutils libUMP libGLESv1_CM libsecion
 
 # Include the UMP header files
@@ -39,6 +39,8 @@ LOCAL_SRC_FILES := \
 	framebuffer_device.cpp
 
 LOCAL_MODULE_TAGS := optional
+LOCAL_VENDOR_MODULE := true
+
 #LOCAL_MODULE := gralloc.default
 LOCAL_MODULE := gralloc.$(TARGET_BOARD_PLATFORM)
 LOCAL_CFLAGS:= -DLOG_TAG=\"gralloc\"
