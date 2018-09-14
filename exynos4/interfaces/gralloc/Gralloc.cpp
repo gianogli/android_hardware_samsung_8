@@ -37,16 +37,16 @@ IAllocator* HIDL_FETCH_IAllocator(const char* /* name */) {
         return nullptr;
     }
 
-    uint8_t major = (module->module_api_version >> 8) & 0xff;
-    switch (major) {
+//    uint8_t major = (module->module_api_version >> 8) & 0xff;
+/*    switch (major) {
         case 1:
             return new Gralloc1Allocator(module);
-        case 0:
+        case 0:*/
             return new Gralloc0Allocator(module);
-        default:
+/*        default:
             ALOGE("unknown gralloc module major version %d", major);
             return nullptr;
-    }
+    }*/
 }
 
 } // namespace implementation
