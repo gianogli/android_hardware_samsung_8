@@ -78,7 +78,7 @@ RegisteredHandlePool* gRegisteredHandles = new RegisteredHandlePool;
 
 bool GrallocMapper::validateDescriptorInfo(
     const BufferDescriptorInfo& descriptorInfo) const {
-    const uint64_t validUsageBits =
+    const uint32_t validUsageBits =
         BufferUsage::CPU_READ_MASK | BufferUsage::CPU_WRITE_MASK |
         BufferUsage::GPU_TEXTURE | BufferUsage::GPU_RENDER_TARGET |
         BufferUsage::COMPOSER_OVERLAY | BufferUsage::COMPOSER_CLIENT_TARGET |
@@ -86,9 +86,7 @@ bool GrallocMapper::validateDescriptorInfo(
         BufferUsage::VIDEO_ENCODER | BufferUsage::CAMERA_OUTPUT |
         BufferUsage::CAMERA_INPUT | BufferUsage::RENDERSCRIPT |
         BufferUsage::VIDEO_DECODER | BufferUsage::SENSOR_DIRECT_DATA |
-        BufferUsage::GPU_DATA_BUFFER | BufferUsage::VENDOR_MASK |
-        (mCapabilities.highUsageBits ? BufferUsage::VENDOR_MASK_HI
-                                     : static_cast<BufferUsage>(0));
+        BufferUsage::GPU_DATA_BUFFER | BufferUsage::VENDOR_MASK;
 
     if (!descriptorInfo.width || !descriptorInfo.height ||
         !descriptorInfo.layerCount) {
@@ -105,7 +103,7 @@ bool GrallocMapper::validateDescriptorInfo(
 
     if (descriptorInfo.usage & ~validUsageBits) {
         // could not fail as gralloc may use the reserved bits...
-        ALOGW("buffer descriptor with invalid usage bits 0x%" PRIx64,
+        ALOGW("buffer descriptor with invalid usage bits 0x%" PRIx32,
               descriptorInfo.usage & ~validUsageBits);
     }
 
@@ -220,7 +218,7 @@ hidl_handle GrallocMapper::getFenceHandle(int fenceFd, char* handleStorage) {
     return hidl_handle(handle);
 }
 
-Return<void> GrallocMapper::lock(void* buffer, uint64_t cpuUsage,
+Return<void> GrallocMapper::lock(void* buffer, uint32_t cpuUsage,
                                  const IMapper::Rect& accessRegion,
                                  const hidl_handle& acquireFence,
                                  lock_cb hidl_cb) {
@@ -244,7 +242,7 @@ Return<void> GrallocMapper::lock(void* buffer, uint64_t cpuUsage,
     return Void();
 }
 
-Return<void> GrallocMapper::lockYCbCr(void* buffer, uint64_t cpuUsage,
+Return<void> GrallocMapper::lockYCbCr(void* buffer, uint32_t cpuUsage,
                                       const IMapper::Rect& accessRegion,
                                       const hidl_handle& acquireFence,
                                       lockYCbCr_cb hidl_cb) {

@@ -44,7 +44,7 @@ void Gralloc0Mapper::unregisterBuffer(buffer_handle_t bufferHandle) {
 }
 
 Error Gralloc0Mapper::lockBuffer(buffer_handle_t bufferHandle,
-                                 uint64_t cpuUsage,
+                                 uint32_t cpuUsage,
                                  const IMapper::Rect& accessRegion, int fenceFd,
                                  void** outData) {
     int result;
@@ -80,7 +80,7 @@ Error Gralloc0Mapper::lockBuffer(buffer_handle_t bufferHandle,
 }
 
 Error Gralloc0Mapper::lockBuffer(buffer_handle_t bufferHandle,
-                                 uint64_t cpuUsage,
+                                 uint32_t cpuUsage,
                                  const IMapper::Rect& accessRegion, int fenceFd,
                                  YCbCrLayout* outLayout) {
     int result;

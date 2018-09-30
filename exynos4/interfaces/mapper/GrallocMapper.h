@@ -38,11 +38,11 @@ class GrallocMapper : public IMapper {
     Return<void> importBuffer(const hidl_handle& rawHandle,
                               importBuffer_cb hidl_cb) override;
     Return<Error> freeBuffer(void* buffer) override;
-    Return<void> lock(void* buffer, uint64_t cpuUsage,
+    Return<void> lock(void* buffer, uint32_t cpuUsage,
                       const IMapper::Rect& accessRegion,
                       const hidl_handle& acquireFence,
                       lock_cb hidl_cb) override;
-    Return<void> lockYCbCr(void* buffer, uint64_t cpuUsage,
+    Return<void> lockYCbCr(void* buffer, uint32_t cpuUsage,
                            const IMapper::Rect& accessRegion,
                            const hidl_handle& acquireFence,
                            lockYCbCr_cb hidl_cb) override;
@@ -69,10 +69,10 @@ class GrallocMapper : public IMapper {
     virtual void unregisterBuffer(buffer_handle_t bufferHandle) = 0;
 
     // Lock a buffer.  The fence is owned by the caller.
-    virtual Error lockBuffer(buffer_handle_t bufferHandle, uint64_t cpuUsage,
+    virtual Error lockBuffer(buffer_handle_t bufferHandle, uint32_t cpuUsage,
                              const IMapper::Rect& accessRegion, int fenceFd,
                              void** outData) = 0;
-    virtual Error lockBuffer(buffer_handle_t bufferHandle, uint64_t cpuUsage,
+    virtual Error lockBuffer(buffer_handle_t bufferHandle, uint32_t cpuUsage,
                              const IMapper::Rect& accessRegion, int fenceFd,
                              YCbCrLayout* outLayout) = 0;
 

@@ -112,7 +112,7 @@ Return<void> Gralloc0Allocator::allocate(const BufferDescriptor& descriptor,
 Error Gralloc0Allocator::allocateOne(const IMapper::BufferDescriptorInfo& info,
                                      buffer_handle_t* outBuffer,
                                      uint32_t* outStride) {
-    if (info.layerCount > 1 || (info.usage >> 32) != 0) {
+    if (info.layerCount > 1) {
         return Error::BAD_VALUE;
     }
 

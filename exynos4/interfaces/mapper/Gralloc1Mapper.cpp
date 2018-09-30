@@ -180,7 +180,7 @@ void Gralloc1Mapper::unregisterBuffer(buffer_handle_t bufferHandle) {
 }
 
 Error Gralloc1Mapper::lockBuffer(buffer_handle_t bufferHandle,
-                                 uint64_t cpuUsage,
+                                 uint32_t cpuUsage,
                                  const IMapper::Rect& accessRegion, int fenceFd,
                                  void** outData) {
     // Dup fenceFd as it is going to be owned by gralloc.  Note that it is
@@ -192,8 +192,8 @@ Error Gralloc1Mapper::lockBuffer(buffer_handle_t bufferHandle,
         }
     }
 
-    const uint64_t consumerUsage =
-        cpuUsage & ~static_cast<uint64_t>(BufferUsage::CPU_WRITE_MASK);
+    const uint32_t consumerUsage =
+        cpuUsage & ~static_cast<uint32_t>(BufferUsage::CPU_WRITE_MASK);
     const auto accessRect = asGralloc1Rect(accessRegion);
     void* data = nullptr;
     int32_t error = mDispatch.lock(mDevice, bufferHandle, cpuUsage,
@@ -207,7 +207,7 @@ Error Gralloc1Mapper::lockBuffer(buffer_handle_t bufferHandle,
 }
 
 Error Gralloc1Mapper::lockBuffer(buffer_handle_t bufferHandle,
-                                 uint64_t cpuUsage,
+                                 uint32_t cpuUsage,
                                  const IMapper::Rect& accessRegion, int fenceFd,
                                  YCbCrLayout* outLayout) {
     // prepare flex layout
@@ -229,8 +229,8 @@ Error Gralloc1Mapper::lockBuffer(buffer_handle_t bufferHandle,
         }
     }
 
-    const uint64_t consumerUsage =
-        cpuUsage & ~static_cast<uint64_t>(BufferUsage::CPU_WRITE_MASK);
+    const uint32_t consumerUsage =
+        cpuUsage & ~static_cast<uint32_t>(BufferUsage::CPU_WRITE_MASK);
     const auto accessRect = asGralloc1Rect(accessRegion);
     error = mDispatch.lockFlex(mDevice, bufferHandle, cpuUsage, consumerUsage,
                                &accessRect, &flex, fenceFd);

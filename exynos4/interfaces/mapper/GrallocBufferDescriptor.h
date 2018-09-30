@@ -45,7 +45,6 @@ inline BufferDescriptor grallocEncodeBufferDescriptor(
     descriptor[3] = descriptorInfo.layerCount;
     descriptor[4] = static_cast<uint32_t>(descriptorInfo.format);
     descriptor[5] = static_cast<uint32_t>(descriptorInfo.usage);
-    descriptor[6] = static_cast<uint32_t>(descriptorInfo.usage >> 32);
 
     return descriptor;
 }
@@ -63,7 +62,7 @@ inline bool grallocDecodeBufferDescriptor(
         descriptor[2],
         descriptor[3],
         static_cast<PixelFormat>(descriptor[4]),
-        (static_cast<uint64_t>(descriptor[6]) << 32) | descriptor[5],
+        descriptor[5],
     };
 
     return true;
