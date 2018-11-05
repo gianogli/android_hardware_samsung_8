@@ -47,7 +47,7 @@ static void *hwc_vsync_thread(void *data)
     char thread_name[64] = HWC_VSYNC_THREAD_NAME;
     prctl(PR_SET_NAME, (unsigned long) &thread_name, 0, 0, 0);
     androidSetThreadPriority(0, HAL_PRIORITY_URGENT_DISPLAY);
-    android_set_rt_ioprio(0, 1);
+    android_set_ioprio(0 /* pid */, IoSchedClass_RT /* clazz */, 1 /* prio */);
 
     memset(buf, 0, sizeof(buf));
 
