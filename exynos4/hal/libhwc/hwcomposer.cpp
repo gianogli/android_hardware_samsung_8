@@ -92,7 +92,6 @@ static int dup_or_warn(int fence)
 static bool format_is_supported_by_fimg(int format)
 {
     switch (format) {
-    case HAL_PIXEL_FORMAT_RGB_565:
     case HAL_PIXEL_FORMAT_RGBA_4444:
     case HAL_PIXEL_FORMAT_RGBX_8888:
     case HAL_PIXEL_FORMAT_BGRA_8888:
@@ -103,6 +102,7 @@ static bool format_is_supported_by_fimg(int format)
     case HAL_PIXEL_FORMAT_CUSTOM_YCrCb_420_SP:
         return true;
 
+    case HAL_PIXEL_FORMAT_RGB_565:
     default:
         ALOGV("%s format=%d false", __FUNCTION__, format);
         return false;
