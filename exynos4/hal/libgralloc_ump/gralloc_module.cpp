@@ -224,6 +224,8 @@ static int gralloc_register_buffer(gralloc_module_t const* module, buffer_handle
     /* if this handle was created in this process, then we keep it as is. */
     private_handle_t* hnd = (private_handle_t*)handle;
 
+    ALOGD_IF(debug_level > 1, "%s: ump_id:%d", __func__, hnd->ump_id);
+
     if (hnd->flags & private_handle_t::PRIV_FLAGS_FRAMEBUFFER) {
         return 0;
     }
@@ -258,6 +260,7 @@ static int gralloc_register_buffer(gralloc_module_t const* module, buffer_handle
     hnd->pid = getpid();
 
     if (hnd->flags & private_handle_t::PRIV_FLAGS_USES_UMP) {
+	ALOGD_IF(debug_level > 1, "%s: ump_id:%d ump_mem_handle:%08x", __func__, hnd->ump_id, hnd->ump_mem_handle);
         hnd->ump_mem_handle = (int)ump_handle_create_from_secure_id(hnd->ump_id);
         if (UMP_INVALID_MEMORY_HANDLE != (ump_handle)hnd->ump_mem_handle) {
             hnd->base = (int)ump_mapped_pointer_get((ump_handle)hnd->ump_mem_handle);
@@ -326,6 +329,12 @@ static int gralloc_register_buffer(gralloc_module_t const* module, buffer_handle
 
 static int unregister_buffer(private_handle_t* hnd)
 {
+	if (private_handle_t::validate(hnd) < 0) {
+        ALOGE("%s Unregistering invalid buffer, returning error", __func__);
+        return -EINVAL;
+    }
+
+    ALOGD_IF(debug_level > 1, "%s: ump_id:%d", __func__, hnd->ump_id);
 #ifdef USE_PARTIAL_FLUSH
     if (hnd->flags & private_handle_t::PRIV_FLAGS_USES_UMP)
         if (!release_rect((int)hnd->ump_id))
@@ -338,12 +347,17 @@ static int unregister_buffer(private_handle_t* hnd)
     if (hnd->pid == getpid()) {
         pthread_mutex_lock(&s_map_lock);
         if (hnd->flags & private_handle_t::PRIV_FLAGS_USES_UMP) {
-            ump_mapped_pointer_release((ump_handle)hnd->ump_mem_handle);
-            hnd->base = 0;
-            ump_reference_release((ump_handle)hnd->ump_mem_handle);
-            hnd->ump_mem_handle = (int)UMP_INVALID_MEMORY_HANDLE;
-            hnd->lockState  = 0;
-            hnd->writeOwner = 0;
+	    if (UMP_INVALID_MEMORY_HANDLE != (ump_handle)hnd->ump_mem_handle) {
+	        ALOGD_IF(debug_level > 1, "%s: ump_id:%d ump_mem_handle:%08x", __func__, hnd->ump_id, hnd->ump_mem_handle);
+	        ump_mapped_pointer_release((ump_handle)hnd->ump_mem_handle);
+	        hnd->base = 0;
+	        ump_reference_release((ump_handle)hnd->ump_mem_handle);
+	        hnd->ump_mem_handle = (int)UMP_INVALID_MEMORY_HANDLE;
+	        hnd->lockState  = 0;
+	        hnd->writeOwner = 0;
+	    } else {
+                ALOGD_IF(debug_level > 1, "%s: ump_id:%d SKIPPED ump_mem_handle:%08x", __func__, hnd->ump_id, hnd->ump_mem_handle);
+            }
         } else if (hnd->flags & private_handle_t::PRIV_FLAGS_USES_IOCTL) {
             if(hnd->base != 0)
                 gralloc_unmap(NULL /* module */, (buffer_handle_t)hnd);
@@ -374,6 +388,16 @@ static int unregister_buffer(private_handle_t* hnd)
     return 0;
 }
 
+void* gralloc_unregister_buffer_thread(void *data) {
+    private_handle_t* hnd = (private_handle_t*)data;
+
+    ALOGD_IF(debug_level > 1, "%s: ump_id:%d START", __func__, hnd->ump_id);
+    usleep(1000000); // 1000ms
+    unregister_buffer(hnd);
+    ALOGD_IF(debug_level > 1, "%s: ump_id:%d END", __func__, hnd->ump_id);
+    return NULL;
+}
+
 static int gralloc_unregister_buffer(gralloc_module_t const* module, buffer_handle_t handle)
 {
     if (private_handle_t::validate(handle) < 0) {
@@ -382,6 +406,22 @@ static int gralloc_unregister_buffer(gralloc_module_t const* module, buffer_hand
     }
 
     private_handle_t* hnd = (private_handle_t*)handle;
+
+    ALOGD_IF(debug_level > 1, "%s: ump_id:%d", __func__, hnd->ump_id);
+    if (hnd->flags & private_handle_t::PRIV_FLAGS_GRAPHICBUFFER) {
+        pthread_attr_t thread_attr;
+        pthread_t unreg_buffer_thread;
+
+        pthread_attr_init(&thread_attr);
+        pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
+        int rc = pthread_create(&unreg_buffer_thread, &thread_attr,
+	gralloc_unregister_buffer_thread, (void *) handle);
+        if (rc < 0) {
+            ALOGE("%s: Unable to create thread", __func__);
+            return -1;
+        }
+        return 0;
+    }
 
     return unregister_buffer(hnd);
 }
