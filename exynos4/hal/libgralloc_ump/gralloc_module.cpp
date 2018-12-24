@@ -324,14 +324,8 @@ static int gralloc_register_buffer(gralloc_module_t const* module, buffer_handle
     return retval;
 }
 
-static int gralloc_unregister_buffer(gralloc_module_t const* module, buffer_handle_t handle)
+static int unregister_buffer(private_handle_t* hnd)
 {
-    if (private_handle_t::validate(handle) < 0) {
-        ALOGE("unregistering invalid buffer, returning error");
-        return -EINVAL;
-    }
-
-    private_handle_t* hnd = (private_handle_t*)handle;
 #ifdef USE_PARTIAL_FLUSH
     if (hnd->flags & private_handle_t::PRIV_FLAGS_USES_UMP)
         if (!release_rect((int)hnd->ump_id))
@@ -352,7 +346,7 @@ static int gralloc_unregister_buffer(gralloc_module_t const* module, buffer_hand
             hnd->writeOwner = 0;
         } else if (hnd->flags & private_handle_t::PRIV_FLAGS_USES_IOCTL) {
             if(hnd->base != 0)
-                gralloc_unmap(module, handle);
+                gralloc_unmap(NULL /* module */, (buffer_handle_t)hnd);
 
             pthread_mutex_unlock(&s_map_lock);
             if (0 < gMemfd) {
@@ -364,7 +358,7 @@ static int gralloc_unregister_buffer(gralloc_module_t const* module, buffer_hand
             ump_mapped_pointer_release((ump_handle)hnd->ump_mem_handle);
             ump_reference_release((ump_handle)hnd->ump_mem_handle);
             if (hnd->base)
-                gralloc_unmap(module, handle);
+                gralloc_unmap(NULL /* module */, (buffer_handle_t)hnd);
 
             hnd->base = 0;
             hnd->ump_mem_handle = (int)UMP_INVALID_MEMORY_HANDLE;
@@ -378,6 +372,18 @@ static int gralloc_unregister_buffer(gralloc_module_t const* module, buffer_hand
     }
 
     return 0;
+}
+
+static int gralloc_unregister_buffer(gralloc_module_t const* module, buffer_handle_t handle)
+{
+    if (private_handle_t::validate(handle) < 0) {
+        ALOGE("unregistering invalid buffer, returning error");
+        return -EINVAL;
+    }
+
+    private_handle_t* hnd = (private_handle_t*)handle;
+
+    return unregister_buffer(hnd);
 }
 
 static int gralloc_lock(gralloc_module_t const* module __unused, buffer_handle_t handle,
