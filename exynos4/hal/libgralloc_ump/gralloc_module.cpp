@@ -541,11 +541,9 @@ static private_handle_t* clone_private_handle(private_handle_t* hnd) {
     result->height = hnd->height;
     result->bpp = hnd->bpp;
     result->stride = hnd->stride;
-    result->yaddr = hnd->yaddr;
     result->uoffset = hnd->uoffset;
     result->voffset = hnd->voffset;
     result->ion_client = hnd->ion_client;
-    result->ion_memory = hnd->ion_memory;
     result->backing_store = hnd->backing_store;
     result->producer_usage = hnd->producer_usage;
     result->consumer_usage = hnd->consumer_usage;
