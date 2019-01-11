@@ -62,6 +62,7 @@ static int gMemfd = 0;
 /* we need this for now because pmem cannot mmap at an offset */
 #define PMEM_HACK   1
 #ifdef USE_PARTIAL_FLUSH
+static pthread_mutex_t s_rect_lock = PTHREAD_MUTEX_INITIALIZER;
 extern int count_rect(int secure_id);
 static struct private_handle_rect *rect_list;
 
