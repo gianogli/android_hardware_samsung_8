@@ -689,6 +689,16 @@ err :
     return false;
 }
 
+extern "C" {
+    bool _ZN7SecFimc6createENS_3DEVENS_4MODEEi(void);
+    bool _ZN7SecFimc6createENS_8FIMC_DEVE17fimc_overlay_modej(void)
+    {
+         return _ZN7SecFimc6createENS_3DEVENS_4MODEEi();
+    }
+
+    void _ZN7SecFimc24getFimcRsrvedPhysMemAddrEv(void) {}
+}
+
 bool SecFimc::destroy()
 {
     if (mFlagCreate == false) {
@@ -953,6 +963,14 @@ bool SecFimc::setSrcAddr(unsigned int physYAddr,
     return true;
 }
 
+bool SecFimc::setSrcPhyAddr(unsigned int physYAddr,
+                         unsigned int physCbAddr,
+                         unsigned int physCrAddr,
+                         int colorFormat)
+{
+     return setSrcAddr(physYAddr, physCbAddr, physCrAddr, colorFormat);
+}
+
 bool SecFimc::setDstParams(unsigned int width, unsigned int height,
                            unsigned int cropX, unsigned int cropY,
                            unsigned int *cropWidth, unsigned int *cropHeight,
@@ -1187,6 +1205,11 @@ bool SecFimc::setDstAddr(unsigned int physYAddr, unsigned int physCbAddr, unsign
     return true;
 }
 
+bool SecFimc::setDstPhyAddr(unsigned int physYAddr, unsigned int physCbAddr, unsigned int physCrAddr)
+{
+     return setDstAddr(physYAddr, physCbAddr, physCrAddr);
+}
+
 bool SecFimc::setRotVal(unsigned int rotVal)
 {
     if (mFlagCreate == false) {
@@ -1418,6 +1441,11 @@ err :
 #endif
 
     return true;
+}
+
+bool SecFimc::handleOneShot()
+{
+    return draw(0, 0);
 }
 
 bool SecFimc::m_streamOn()

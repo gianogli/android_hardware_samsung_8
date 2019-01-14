@@ -145,6 +145,11 @@ public:
                     unsigned int physCrAddr = 0,
                     int colorFormat = 0);
 
+    virtual bool setSrcPhyAddr(unsigned int physYAddr,
+                    unsigned int physCbAddr = 0,
+                    unsigned int physCrAddr = 0,
+                    int colorFormat = 0);
+
     virtual bool setDstParams(unsigned int width, unsigned int height,
                       unsigned int cropX, unsigned int cropY,
                       unsigned int *cropWidth, unsigned int *cropHeight,
@@ -158,12 +163,15 @@ public:
 
     virtual bool setDstAddr(unsigned int physYAddr, unsigned int physCbAddr = 0, unsigned int physCrAddr = 0, int buf_index = 0);
 
+    virtual bool setDstPhyAddr(unsigned int physYAddr, unsigned int physCbAddr = 0, unsigned int physCrAddr = 0);
+
     virtual bool setRotVal(unsigned int rotVal);
     virtual bool setGlobalAlpha(bool enable = true, int alpha = 0xff);
     virtual bool setLocalAlpha(bool enable);
     virtual bool setColorKey(bool enable = true, int colorKey = 0xff);
 
     virtual bool draw(int src_index, int dst_index);
+    virtual bool handleOneShot(void);
 
 private:
     bool m_streamOn(void);
