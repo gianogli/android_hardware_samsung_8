@@ -28,7 +28,6 @@
  * limitations under the License.
  */
 
-//#define LOG_NDEBUG 0
 #include <errno.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -42,8 +41,6 @@
 #include <hardware/hardware.h>
 #include <hardware/gralloc.h>
 #include <fcntl.h>
-
-#include <gralloc1-adapter.h>
 
 #include "gralloc_priv.h"
 #include "alloc_device.h"
@@ -243,12 +240,6 @@ static int gralloc_device_open(const hw_module_t* module, const char* name, hw_d
     int status = -EINVAL;
     char property[PROPERTY_VALUE_MAX];
 
-
-#ifdef ADVERTISE_GRALLOC1
-    if (!strcmp(name, GRALLOC_HARDWARE_MODULE_ID)) {
-        return gralloc1_adapter_device_open(module, name, device);
-    }
-#endif
 
     if (!strcmp(name, GRALLOC_HARDWARE_GPU0))
         status = alloc_device_open(module, name, device);
@@ -599,108 +590,6 @@ static int gralloc_unlock(gralloc_module_t const* module, buffer_handle_t handle
     return 0;
 }
 
-static int gralloc_perform(struct gralloc_module_t const* module,
-                    int operation, ... )
-{
-    int res = -EINVAL;
-    va_list args;
-    if(!module)
-        return res;
-
-    va_start(args, operation);
-    switch (operation) {
-        case GRALLOC1_ADAPTER_PERFORM_GET_REAL_MODULE_API_VERSION_MINOR:
-            {
-                auto outMinorVersion = va_arg(args, int*);
-                *outMinorVersion = 0;
-                ALOGV("%s: GRALLOC1_ADAPTER_PERFORM_GET_REAL_MODULE_API_VERSION_MINOR %d",
-                    __func__, *outMinorVersion);
-            } break;
-        case GRALLOC1_ADAPTER_PERFORM_SET_USAGES:
-            {
-                auto hnd =  va_arg(args, private_handle_t*);
-                auto producerUsage = va_arg(args, uint64_t);
-                auto consumerUsage = va_arg(args, uint64_t);
-                hnd->producer_usage = producerUsage;
-                hnd->consumer_usage = consumerUsage;
-                ALOGV("%s: (%p) GRALLOC1_ADAPTER_PERFORM_SET_USAGES p:0x%08x c:0x%08x", __func__,
-                    hnd, producerUsage, consumerUsage);
-            } break;
-
-        case GRALLOC1_ADAPTER_PERFORM_GET_DIMENSIONS:
-            {
-                auto hnd =  va_arg(args, private_handle_t*);
-                auto outWidth = va_arg(args, int*);
-                auto outHeight = va_arg(args, int*);
-                *outWidth = hnd->width;
-                *outHeight = hnd->height;
-                ALOGV("%s: (%p) GRALLOC1_ADAPTER_PERFORM_GET_DIMENSIONS %d x %d", __func__,
-                    hnd, *outWidth, *outHeight);
-            } break;
-
-        case GRALLOC1_ADAPTER_PERFORM_GET_FORMAT:
-            {
-                auto hnd =  va_arg(args, private_handle_t*);
-                auto outFormat = va_arg(args, int*);
-                *outFormat = hnd->format;
-                ALOGV("%s: (%p) GRALLOC1_ADAPTER_PERFORM_GET_FORMAT %d", __func__,
-                    hnd, *outFormat);
-            } break;
-
-        case GRALLOC1_ADAPTER_PERFORM_GET_PRODUCER_USAGE:
-            {
-                auto hnd =  va_arg(args, private_handle_t*);
-                auto outUsage = va_arg(args, uint64_t*);
-                *outUsage = hnd->producer_usage;
-                ALOGV("%s: (%p) GRALLOC1_ADAPTER_PERFORM_GET_PRODUCER_USAGE 0x%08x", __func__,
-                    hnd, hnd->producer_usage);
-            } break;
-        case GRALLOC1_ADAPTER_PERFORM_GET_CONSUMER_USAGE:
-            {
-                auto hnd =  va_arg(args, private_handle_t*);
-                auto outUsage = va_arg(args, uint64_t*);
-                *outUsage = hnd->consumer_usage;
-                ALOGV("%s: (%p) GRALLOC1_ADAPTER_PERFORM_GET_CONSUMER_USAGE 0x%08x", __func__,
-                    hnd, hnd->consumer_usage);
-            } break;
-
-        case GRALLOC1_ADAPTER_PERFORM_GET_BACKING_STORE:
-            {
-                auto hnd =  va_arg(args, private_handle_t*);
-                auto outBackingStore = va_arg(args, uint64_t*);
-                *outBackingStore = hnd->backing_store;
-                ALOGV("%s: (%p) GRALLOC1_ADAPTER_PERFORM_GET_BACKING_STORE %llu", __func__,
-                    hnd, *outBackingStore);
-            } break;
-
-        case GRALLOC1_ADAPTER_PERFORM_GET_NUM_FLEX_PLANES:
-            {
-                auto hnd =  va_arg(args, private_handle_t*);
-                auto outNumFlexPlanes = va_arg(args, int*);
-
-                (void) hnd;
-                // for simpilicity
-                *outNumFlexPlanes = 4;
-                ALOGV("%s: (%p) GRALLOC1_ADAPTER_PERFORM_GET_NUM_FLEX_PLANES %d", __func__,
-                    hnd, *outNumFlexPlanes);
-            } break;
-
-        case GRALLOC1_ADAPTER_PERFORM_GET_STRIDE:
-            {
-                auto hnd =  va_arg(args, private_handle_t*);
-                auto outStride = va_arg(args, int*);
-                *outStride = hnd->width;
-                ALOGV("%s: (%p) GRALLOC1_ADAPTER_PERFORM_GET_STRIDE %d", __func__,
-                    hnd, *outStride);
-            } break;
-        default:
-            ALOGE("%s: NOT IMPLEMENTED %d", __func__, operation);
-            break;
-    }
-    va_end(args);
-    return res;
-}
-
 static int gralloc_getphys(gralloc_module_t const* module, buffer_handle_t handle, void** paddr)
 {
     private_handle_t* hnd = (private_handle_t*)handle;
@@ -724,11 +613,7 @@ struct private_module_t HAL_MODULE_INFO_SYM =
         common:
         {
             tag: HARDWARE_MODULE_TAG,
-#ifdef ADVERTISE_GRALLOC1
-            version_major: GRALLOC1_ADAPTER_MODULE_API_VERSION_1_0,
-#else
             version_major: 1,
-#endif
             version_minor: 0,
             id: GRALLOC_HARDWARE_MODULE_ID,
             name: "Graphics Memory Allocator Module",
@@ -742,7 +627,7 @@ struct private_module_t HAL_MODULE_INFO_SYM =
         lock: gralloc_lock,
         unlock: gralloc_unlock,
 //        getphys: gralloc_getphys,
-        perform: gralloc_perform,
+        perform: NULL,
         lock_ycbcr: NULL,
     },
     framebuffer: NULL,
