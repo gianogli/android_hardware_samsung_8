@@ -27,6 +27,7 @@
  * limitations under the License.
  */
 
+//#define LOG_NDEBUG 0
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
@@ -97,6 +98,12 @@ extern int release_rect(int secure_id);
 extern int get_bpp(int format);
 
 #define EXYNOS4_ALIGN( value, base ) (((value) + ((base) - 1)) & ~((base) - 1))
+
+static uint64_t next_backing_store_id()
+{
+    static std::atomic<uint64_t> next_id(1);
+    return next_id++;
+}
 
 int gralloc_alloc_fimc1(size_t size, int usage,
                         buffer_handle_t* pHandle, int w, int h,
@@ -340,6 +347,7 @@ static int gralloc_alloc_buffer(alloc_device_t* dev, size_t size, int usage,
                     }
 #endif
 
+                    hnd->backing_store = next_backing_store_id();
                     hnd->format = format;
                     hnd->usage = usage;
                     hnd->width = w;
@@ -378,6 +386,8 @@ static int gralloc_alloc_framebuffer_locked(alloc_device_t* dev, size_t size, in
                                             buffer_handle_t* pHandle, int w, int h,
                                             int format, int bpp, int stride)
 {
+    ALOGV("%s: size:%d usage:%d w:%d h:%d format:%d bpp:%d ",
+        __func__, size, usage, w,h, format, bpp);
     private_module_t* m = reinterpret_cast<private_module_t*>(dev->common.module);
 
     ALOGD_IF(debug_level > 0, "%s size=0x%x usage=0x%x w=%d h=%d format=0x%x(%d) bpp=%d stride=%d", __func__, size, usage, w, h, format, format, bpp, stride);
@@ -444,6 +454,7 @@ static int gralloc_alloc_framebuffer_locked(alloc_device_t* dev, size_t size, in
     hnd->width = w;
     hnd->height = h;
     hnd->bpp = bpp;
+    hnd->backing_store = next_backing_store_id();
     hnd->paddr = l_paddr;
     hnd->stride = stride;
 
