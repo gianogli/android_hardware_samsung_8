@@ -287,6 +287,7 @@ bool is_overlay_supported(struct hwc_context_t *ctx, hwc_layer_1_t &layer, size_
     ALOGV("%s layer_requires_process() mode=%d", __FUNCTION__, (int) mode);
 
     switch (mode) {
+#if 0
     case gsc_map_t::FIMG:
         if (!supports_fimg(layer)) {
             ALOGW("\tlayer %u: FIMG required but not supported", i);
@@ -297,7 +298,7 @@ bool is_overlay_supported(struct hwc_context_t *ctx, hwc_layer_1_t &layer, size_
 
 	}
         break;
-
+#endif
     case gsc_map_t::FIMC:
         if (!supports_fimc(layer)) {
             ALOGW("\tlayer %u: FIMC required but not supported", i);
