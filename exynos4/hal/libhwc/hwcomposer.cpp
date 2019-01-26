@@ -291,14 +291,23 @@ bool is_overlay_supported(struct hwc_context_t *ctx, hwc_layer_1_t &layer, size_
         if (!supports_fimg(layer)) {
             ALOGW("\tlayer %u: FIMG required but not supported", i);
             return false;
-        }
+        } else {
+            ALOGW("\t<fimg> layer %u, format %u, cType=%d, hints=%d, flags=%d, w=%d, h=%d, tr=%d, bl=%d, a=%d", i, handle->format, layer.compositionType,
+				layer.hints, layer.flags, WIDTH(layer.displayFrame), HEIGHT(layer.displayFrame), layer.transform, layer.blending, layer.planeAlpha);
+
+	}
         break;
 
     case gsc_map_t::FIMC:
         if (!supports_fimc(layer)) {
-            ALOGW("\tlayer %u: FIMG required but not supported", i);
+            ALOGW("\tlayer %u: FIMC required but not supported", i);
             return false;
-        }
+        } else {
+            ALOGW("\t<fimg> layer %u, format %u, cType=%d, hints=%d, flags=%d, w=%d, h=%d, tr=%d, bl=%d, a=%d", i, handle->format, layer.compositionType,
+				layer.hints, layer.flags, WIDTH(layer.displayFrame), HEIGHT(layer.displayFrame), layer.transform, layer.blending, layer.planeAlpha);
+
+	}
+
         break;
 
     default:
@@ -306,7 +315,11 @@ bool is_overlay_supported(struct hwc_context_t *ctx, hwc_layer_1_t &layer, size_
 				|| !is_x_aligned(layer)) {
             ALOGW("\tlayer %u: pixel format %u not supported", i, handle->format);
             return false;
-        }
+        } else {
+            ALOGW("\t<fimg> layer %u, format %u, cType=%d, hints=%d, flags=%d, w=%d, h=%d, tr=%d, bl=%d, a=%d", i, handle->format, layer.compositionType,
+				layer.hints, layer.flags, WIDTH(layer.displayFrame), HEIGHT(layer.displayFrame), layer.transform, layer.blending, layer.planeAlpha);
+
+	}
     }
 
     if (visible_width(ctx, layer) < BURSTLEN_BYTES) {
