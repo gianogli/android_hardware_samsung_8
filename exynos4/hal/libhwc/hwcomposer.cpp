@@ -1194,7 +1194,7 @@ static int hwc_device_close(struct hw_device_t *dev)
     close(ctx->fb0_fd);
 
     // Close vsync
-    //close_vsync_thread(ctx);
+    close_vsync_thread(ctx);
 
     // Close gralloc
     gralloc_close(ctx->alloc_device);
@@ -1483,7 +1483,7 @@ static int hwc_device_open(const struct hw_module_t* module, const char* name,
         dev->multi_fimg = atoi(value);
 
         // Init Vsync
-        //init_vsync_thread(dev);
+        init_vsync_thread(dev);
 
         // query LCD info
         dev->fb0_fd = open("/dev/graphics/fb0", O_RDWR);
